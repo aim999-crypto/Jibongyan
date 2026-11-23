@@ -1,0 +1,58 @@
+
+name: JIBON GYAN 365 - Auto Publisher
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 0,3,6,9,12,15 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: jibon-gyan-publisher
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate daily content if needed
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python engine/generate.py
+
+      - name: Publish 4 posts to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python publisher/telegram_bot.py --limit 4
+
+      - name: Save publishing history
+        run: |
+          git config user.name "JIBON GYAN Bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add database/
+          git diff --cached --quiet || git commit -m "Update publishing history"
+          git push
