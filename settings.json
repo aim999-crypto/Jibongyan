@@ -1,0 +1,19 @@
+{
+  "channel_name": "জীবনজ্ঞান ৩৬৫",
+  "tagline": "ছোট ভিডিও, বড় সমাধান।",
+  "language": "বাংলা",
+  "daily_posts": 24,
+  "post_mix": {
+    "video": 8,
+    "image": 6,
+    "text": 5,
+    "tip": 3,
+    "quiz": 1,
+    "challenge": 1
+  },
+  "video_seconds": 35,
+  "video_width": 720,
+  "video_height": 1280,
+  "gemini_model": "gemini-2.5-flash",
+  "timezone": "Asia/Dhaka"
+}

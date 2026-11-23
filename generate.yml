@@ -1,0 +1,33 @@
+name: Daily Content Generator
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "5 0 * * *" # 06:05 Bangladesh time
+
+permissions:
+  contents: write
+
+concurrency:
+  group: jibon-gyan-content
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Generate 24 Bengali posts
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python engine/generate.py
+      - name: Commit queue
+        run: |
+          git config user.name "jibon-gyan-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add database/queue.json
+          git commit -m "Generate daily Bengali content" || echo "No changes"
+          git push
